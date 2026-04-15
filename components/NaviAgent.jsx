@@ -260,17 +260,22 @@ export default function NaviAgent() {
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body: JSON.stringify({
-          model:"claude-sonnet-4-20250514",
+          model:"claude-opus-4-5",
           max_tokens:1024,
           system:SYSTEM_PROMPT,
           messages:history,
         }),
       });
       const d = await r.json();
+      if (!r.ok) {
+        const errMsg = d.error?.message || d.error || JSON.stringify(d);
+        setMsgs(p => [...p.slice(0,-1), { role:"assistant", content:`Error ${r.status}: ${errMsg}` }]);
+        return;
+      }
       const reply = d.content?.find(b=>b.type==="text")?.text || "Sin respuesta.";
       setMsgs(p => [...p.slice(0,-1), { role:"assistant", content:reply }]);
-    } catch {
-      setMsgs(p => [...p.slice(0,-1), { role:"assistant", content:"Error de conexión." }]);
+    } catch (err) {
+      setMsgs(p => [...p.slice(0,-1), { role:"assistant", content:`Error de conexión: ${err.message}` }]);
     } finally {
       setBusy(false);
       setTimeout(() => inputRef.current?.focus(), 80);
