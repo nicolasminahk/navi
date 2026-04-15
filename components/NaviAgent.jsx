@@ -182,9 +182,8 @@ Adopción enterprise — MEDIO — CSRD obliga, pipeline validado con data cente
 Precio carbono — MEDIO — premium justificado, demanda 24/7 CFE inelástica
 
 ═══════════════════════════════════════
-INSTRUCCIONES
+INSTRUCCIONES COMERCIALES
 ═══════════════════════════════════════
-INSTRUCCIONES COMERCIALES:
 - Responde en el idioma del usuario (español por defecto)
 - No inventes datos fuera de este contexto; si no lo sabes, dilo
 - Inversores: abre con la oportunidad (0 competidores, ventana 12–18m, CAGR 120%), luego profundiza en lo que pregunten
@@ -208,13 +207,16 @@ const CHIPS = [
 
 function Dots() {
   return (
-    <span style={{ display:"inline-flex", gap:4, alignItems:"center" }}>
-      {[0,1,2].map(i => (
+    <span style={{ display: "inline-flex", gap: 3, alignItems: "center", padding: "1px 0" }}>
+      {[0, 1, 2].map(i => (
         <span key={i} style={{
-          width:6, height:6, borderRadius:"50%", display:"inline-block",
-          background:"#5BD5F0",
-          animation:`nvBounce 1.1s ease-in-out ${i*0.16}s infinite`,
-        }}/>
+          width: 5,
+          height: 5,
+          borderRadius: "50%",
+          display: "inline-block",
+          background: "rgba(255,255,255,0.38)",
+          animation: `nvBounce 1.2s ease-in-out ${i * 0.15}s infinite`,
+        }} />
       ))}
     </span>
   );
@@ -224,27 +226,46 @@ function Msg({ m }) {
   const me = m.role === "user";
   return (
     <div style={{
-      display:"flex", flexDirection: me?"row-reverse":"row",
-      gap:8, marginBottom:14, alignItems:"flex-end",
+      display: "flex",
+      flexDirection: me ? "row-reverse" : "row",
+      gap: 8,
+      marginBottom: 10,
+      alignItems: "flex-end",
     }}>
       {!me && (
         <div style={{
-          width:26, height:26, minWidth:26, borderRadius:"50%",
-          background:"linear-gradient(135deg,#1B9CE8,#063460)",
-          display:"flex", alignItems:"center", justifyContent:"center",
-          fontSize:10, fontWeight:800, color:"#fff", marginBottom:2,
-          fontFamily:"'Syne',sans-serif", flexShrink:0,
+          width: 26,
+          height: 26,
+          minWidth: 26,
+          borderRadius: "50%",
+          background: "linear-gradient(145deg, #1B9CE8 0%, #0A4272 100%)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 10,
+          fontWeight: 800,
+          color: "#fff",
+          marginBottom: 2,
+          fontFamily: "'Syne', sans-serif",
+          flexShrink: 0,
+          letterSpacing: "-0.3px",
         }}>N</div>
       )}
       <div style={{
-        maxWidth:"76%", padding:"10px 13px",
-        background: me ? "linear-gradient(135deg,#1B9CE8,#0D7FC4)" : "rgba(255,255,255,0.07)",
-        border: me ? "none" : "1px solid rgba(255,255,255,0.09)",
-        borderRadius: me ? "16px 16px 4px 16px" : "4px 16px 16px 16px",
-        fontSize:13.5, lineHeight:1.7, color:"#DFF0FA",
-        whiteSpace:"pre-wrap", wordBreak:"break-word",
+        maxWidth: "75%",
+        padding: "10px 14px",
+        background: me ? "#1B9CE8" : "rgba(255,255,255,0.07)",
+        border: me ? "none" : "1px solid rgba(255,255,255,0.08)",
+        borderRadius: me ? "18px 18px 4px 18px" : "4px 18px 18px 18px",
+        fontSize: 14,
+        lineHeight: 1.65,
+        color: me ? "rgba(255,255,255,0.97)" : "rgba(255,255,255,0.82)",
+        whiteSpace: "pre-wrap",
+        wordBreak: "break-word",
+        letterSpacing: "-0.1px",
+        fontWeight: 400,
       }}>
-        {m.content === "…" ? <Dots/> : m.content}
+        {m.content === "…" ? <Dots /> : m.content}
       </div>
     </div>
   );
@@ -258,37 +279,37 @@ export default function NaviAgent() {
   const endRef = useRef(null);
   const inputRef = useRef(null);
 
-  useEffect(() => { endRef.current?.scrollIntoView({ behavior:"smooth" }); }, [msgs]);
+  useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs]);
 
   async function send(override) {
     const q = (override ?? text).trim();
     if (!q || busy) return;
     setLive(true);
     setText("");
-    const history = [...msgs, { role:"user", content:q }];
-    setMsgs([...history, { role:"assistant", content:"…" }]);
+    const history = [...msgs, { role: "user", content: q }];
+    setMsgs([...history, { role: "assistant", content: "…" }]);
     setBusy(true);
     try {
       const r = await fetch("/api/chat", {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model:"claude-opus-4-5",
-          max_tokens:1024,
-          system:SYSTEM_PROMPT,
-          messages:history,
+          model: "claude-opus-4-5",
+          max_tokens: 1024,
+          system: SYSTEM_PROMPT,
+          messages: history,
         }),
       });
       const d = await r.json();
       if (!r.ok) {
         const errMsg = d.error?.message || d.error || JSON.stringify(d);
-        setMsgs(p => [...p.slice(0,-1), { role:"assistant", content:`Error ${r.status}: ${errMsg}` }]);
+        setMsgs(p => [...p.slice(0, -1), { role: "assistant", content: `Error ${r.status}: ${errMsg}` }]);
         return;
       }
-      const reply = d.content?.find(b=>b.type==="text")?.text || "Sin respuesta.";
-      setMsgs(p => [...p.slice(0,-1), { role:"assistant", content:reply }]);
+      const reply = d.content?.find(b => b.type === "text")?.text || "Sin respuesta.";
+      setMsgs(p => [...p.slice(0, -1), { role: "assistant", content: reply }]);
     } catch (err) {
-      setMsgs(p => [...p.slice(0,-1), { role:"assistant", content:`Error de conexión: ${err.message}` }]);
+      setMsgs(p => [...p.slice(0, -1), { role: "assistant", content: `Error de conexión: ${err.message}` }]);
     } finally {
       setBusy(false);
       setTimeout(() => inputRef.current?.focus(), 80);
@@ -298,50 +319,364 @@ export default function NaviAgent() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap');
-        @keyframes nvBounce{0%,80%,100%{transform:translateY(0);opacity:.4}40%{transform:translateY(-5px);opacity:1}}
-        @keyframes nvIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
-        .nv-page{display:flex;justify-content:center;align-items:center;padding:16px;min-height:100%;background:#050D17}
-        .nv-card{width:100%;max-width:440px;height:min(640px,90dvh);min-height:480px;display:flex;flex-direction:column;background:#071219;border:1px solid rgba(27,156,232,.2);border-radius:18px;overflow:hidden;font-family:'DM Sans',system-ui,sans-serif;box-shadow:0 24px 64px rgba(0,0,0,.5),0 0 0 1px rgba(27,156,232,.08)}
-        .nv-hd{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.07);flex-shrink:0;background:rgba(255,255,255,.02)}
-        .nv-av{width:34px;height:34px;min-width:34px;border-radius:50%;background:linear-gradient(135deg,#1B9CE8,#063460);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:13px;font-weight:800;color:#fff;box-shadow:0 0 0 3px rgba(27,156,232,.18)}
-        .nv-nm{font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:#fff;line-height:1.2}
-        .nv-sb{font-size:10px;color:#5BD5F0;text-transform:uppercase;letter-spacing:.07em;margin-top:2px}
-        .nv-online{margin-left:auto;display:flex;align-items:center;gap:5px}
-        .nv-dot{width:6px;height:6px;border-radius:50%;background:#00C896;box-shadow:0 0 6px rgba(0,200,150,.6)}
-        .nv-otxt{font-size:10.5px;color:#5BD5F0;font-weight:500}
-        .nv-body{flex:1;overflow-y:auto;padding:16px 16px 0;scrollbar-width:thin;scrollbar-color:rgba(27,156,232,.12) transparent}
-        .nv-body::-webkit-scrollbar{width:3px}
-        .nv-body::-webkit-scrollbar-thumb{background:rgba(27,156,232,.18);border-radius:3px}
-        .nv-splash{display:flex;flex-direction:column;align-items:center;text-align:center;padding:24px 12px 8px;animation:nvIn .4s ease}
-        .nv-sav{width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#1B9CE8,#063460);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#fff;margin:0 auto 14px;box-shadow:0 0 32px rgba(27,156,232,.3)}
-        .nv-sh1{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:#fff;margin-bottom:8px}
-        .nv-sp{font-size:12.5px;color:#7EB5D0;line-height:1.65;max-width:280px;margin:0 auto 20px}
-        .nv-sp strong{color:#5BD5F0;font-weight:500}
-        .nv-chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
-        .nv-chip{background:rgba(27,156,232,.07);border:1px solid rgba(27,156,232,.2);border-radius:20px;padding:6px 12px;font-size:11.5px;color:#7EB5D0;cursor:pointer;transition:all .15s;font-family:inherit;white-space:nowrap;line-height:1.3}
-        .nv-chip:hover{background:rgba(27,156,232,.16);color:#DFF0FA;border-color:rgba(27,156,232,.4);transform:translateY(-1px)}
-        .nv-chip:active{transform:scale(.97)}
-        .nv-msg{animation:nvIn .22s ease}
-        .nv-strip{display:flex;gap:5px;overflow-x:auto;padding:8px 14px 0;scrollbar-width:none;flex-shrink:0}
-        .nv-strip::-webkit-scrollbar{display:none}
-        .nv-strip .nv-chip{font-size:10.5px;padding:5px 9px}
-        .nv-ft{padding:10px 13px 14px;flex-shrink:0}
-        .nv-box{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.055);border:1px solid rgba(27,156,232,.2);border-radius:12px;padding:9px 11px;transition:border-color .2s}
-        .nv-box:focus-within{border-color:rgba(27,156,232,.5)}
-        .nv-in{background:transparent;border:none;outline:none;color:#DFF0FA;font-size:13.5px;font-family:inherit;flex:1;min-width:0}
-        .nv-in::placeholder{color:rgba(180,220,245,.25)}
-        .nv-send{background:#1B9CE8;border:none;border-radius:8px;width:32px;height:32px;min-width:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
-        .nv-send:hover:not(:disabled){background:#0D85CE;transform:scale(1.05)}
-        .nv-send:active:not(:disabled){transform:scale(.96)}
-        .nv-send:disabled{background:rgba(27,156,232,.18);cursor:not-allowed}
-        .nv-cap{font-size:9px;color:rgba(100,150,190,.28);text-align:center;margin-top:6px;letter-spacing:.05em}
-        @media(max-width:500px){
-          .nv-page{padding:0}
-          .nv-card{max-width:100%;height:100dvh;min-height:unset;border-radius:0;border-left:none;border-right:none}
-          .nv-splash{padding:20px 8px 8px}
-          .nv-sh1{font-size:16px}
-          .nv-sp{font-size:12px}
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Syne:wght@700;800&display=swap');
+
+        @keyframes nvBounce {
+          0%, 80%, 100% { transform: translateY(0); opacity: 0.35; }
+          40% { transform: translateY(-4px); opacity: 1; }
+        }
+        @keyframes nvSlideUp {
+          from { opacity: 0; transform: translateY(8px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes nvFadeIn {
+          from { opacity: 0; }
+          to   { opacity: 1; }
+        }
+        @keyframes nvPulse {
+          0%, 100% { opacity: 1; }
+          50%       { opacity: 0.35; }
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+
+        .nv-page {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          padding: 24px 16px;
+          min-height: 100%;
+          background: #050D17;
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+        }
+
+        /* Card */
+        .nv-card {
+          width: 100%;
+          max-width: 420px;
+          height: min(700px, 92dvh);
+          min-height: 520px;
+          display: flex;
+          flex-direction: column;
+          background: rgba(8, 18, 34, 0.96);
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 24px;
+          overflow: hidden;
+          box-shadow:
+            0 0 0 0.5px rgba(27,156,232,0.1),
+            0 40px 100px rgba(0,0,0,0.65),
+            0 8px 32px rgba(0,0,0,0.35);
+          backdrop-filter: blur(40px);
+          -webkit-backdrop-filter: blur(40px);
+        }
+
+        /* Header */
+        .nv-hd {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 16px 20px;
+          border-bottom: 1px solid rgba(255,255,255,0.06);
+          flex-shrink: 0;
+          background: rgba(255,255,255,0.015);
+        }
+
+        .nv-av {
+          width: 38px;
+          height: 38px;
+          min-width: 38px;
+          border-radius: 50%;
+          background: linear-gradient(145deg, #1B9CE8 0%, #083868 100%);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-family: 'Syne', sans-serif;
+          font-size: 14px;
+          font-weight: 800;
+          color: #fff;
+          box-shadow: 0 0 0 2.5px rgba(27,156,232,0.22), 0 4px 12px rgba(27,156,232,0.2);
+          letter-spacing: -0.3px;
+          flex-shrink: 0;
+        }
+
+        .nv-hd-info { flex: 1; min-width: 0; }
+
+        .nv-nm {
+          font-family: 'Syne', sans-serif;
+          font-size: 15px;
+          font-weight: 700;
+          color: rgba(255,255,255,0.95);
+          line-height: 1.2;
+          letter-spacing: -0.2px;
+        }
+
+        .nv-sb {
+          font-size: 11px;
+          color: rgba(91,213,240,0.65);
+          letter-spacing: 0.01em;
+          margin-top: 2px;
+          font-weight: 400;
+        }
+
+        .nv-online {
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          background: rgba(0,210,130,0.07);
+          border: 1px solid rgba(0,210,130,0.14);
+          border-radius: 100px;
+          padding: 4px 10px 4px 7px;
+          flex-shrink: 0;
+        }
+
+        .nv-dot {
+          width: 5px;
+          height: 5px;
+          border-radius: 50%;
+          background: #00D08A;
+          box-shadow: 0 0 5px rgba(0,208,138,0.7);
+          animation: nvPulse 2.8s ease-in-out infinite;
+        }
+
+        .nv-otxt {
+          font-size: 11px;
+          color: rgba(0,210,130,0.8);
+          font-weight: 500;
+          letter-spacing: 0.01em;
+        }
+
+        /* Body */
+        .nv-body {
+          flex: 1;
+          overflow-y: auto;
+          padding: 20px 20px 4px;
+          scrollbar-width: none;
+        }
+        .nv-body::-webkit-scrollbar { display: none; }
+
+        /* Splash */
+        .nv-splash {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+          padding: 36px 16px 16px;
+          animation: nvFadeIn 0.45s ease;
+        }
+
+        .nv-sav {
+          width: 64px;
+          height: 64px;
+          border-radius: 50%;
+          background: linear-gradient(145deg, #1B9CE8 0%, #083868 100%);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-family: 'Syne', sans-serif;
+          font-size: 26px;
+          font-weight: 800;
+          color: #fff;
+          margin: 0 auto 20px;
+          box-shadow:
+            0 0 0 10px rgba(27,156,232,0.07),
+            0 0 48px rgba(27,156,232,0.22);
+          letter-spacing: -0.5px;
+        }
+
+        .nv-sh1 {
+          font-family: 'Syne', sans-serif;
+          font-size: 22px;
+          font-weight: 800;
+          color: rgba(255,255,255,0.95);
+          margin-bottom: 10px;
+          letter-spacing: -0.5px;
+          line-height: 1.2;
+        }
+
+        .nv-sp {
+          font-size: 13.5px;
+          color: rgba(255,255,255,0.38);
+          line-height: 1.7;
+          max-width: 272px;
+          margin: 0 auto 28px;
+          font-weight: 400;
+          letter-spacing: -0.05px;
+        }
+
+        .nv-sp strong {
+          color: rgba(91,213,240,0.75);
+          font-weight: 500;
+        }
+
+        /* Chips */
+        .nv-chips {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 7px;
+          justify-content: center;
+        }
+
+        .nv-chip {
+          background: rgba(27,156,232,0.07);
+          border: 1px solid rgba(27,156,232,0.16);
+          border-radius: 100px;
+          padding: 7px 14px;
+          font-size: 12px;
+          color: rgba(255,255,255,0.5);
+          cursor: pointer;
+          transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+          font-family: inherit;
+          font-weight: 500;
+          white-space: nowrap;
+          line-height: 1.35;
+          letter-spacing: 0.01em;
+        }
+
+        .nv-chip:hover {
+          background: rgba(27,156,232,0.16);
+          color: rgba(255,255,255,0.88);
+          border-color: rgba(27,156,232,0.32);
+          transform: translateY(-1px);
+        }
+
+        .nv-chip:active {
+          transform: scale(0.96) translateY(0);
+        }
+
+        /* Message animation */
+        .nv-msg {
+          animation: nvSlideUp 0.22s ease;
+        }
+
+        /* Chip strip (live) */
+        .nv-strip {
+          display: flex;
+          gap: 6px;
+          overflow-x: auto;
+          padding: 10px 20px 0;
+          scrollbar-width: none;
+          flex-shrink: 0;
+        }
+        .nv-strip::-webkit-scrollbar { display: none; }
+
+        .nv-strip .nv-chip {
+          font-size: 11px;
+          padding: 5px 11px;
+        }
+
+        /* Divider above input */
+        .nv-divider {
+          height: 1px;
+          background: rgba(255,255,255,0.05);
+          margin: 10px 0 0;
+          flex-shrink: 0;
+        }
+
+        /* Footer / Input */
+        .nv-ft {
+          padding: 12px 16px 16px;
+          flex-shrink: 0;
+        }
+
+        .nv-box {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          background: rgba(255,255,255,0.05);
+          border: 1px solid rgba(255,255,255,0.09);
+          border-radius: 100px;
+          padding: 9px 9px 9px 18px;
+          transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .nv-box:focus-within {
+          border-color: rgba(27,156,232,0.38);
+          box-shadow: 0 0 0 3px rgba(27,156,232,0.07);
+        }
+
+        .nv-in {
+          background: transparent;
+          border: none;
+          outline: none;
+          color: rgba(255,255,255,0.9);
+          font-size: 14px;
+          font-family: inherit;
+          font-weight: 400;
+          flex: 1;
+          min-width: 0;
+          letter-spacing: -0.1px;
+        }
+
+        .nv-in::placeholder {
+          color: rgba(255,255,255,0.2);
+        }
+
+        .nv-send {
+          background: #1B9CE8;
+          border: none;
+          border-radius: 50%;
+          width: 34px;
+          height: 34px;
+          min-width: 34px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: background 0.15s ease, transform 0.15s ease;
+          flex-shrink: 0;
+        }
+
+        .nv-send:hover:not(:disabled) {
+          background: #158BD0;
+          transform: scale(1.07);
+        }
+
+        .nv-send:active:not(:disabled) {
+          transform: scale(0.93);
+        }
+
+        .nv-send:disabled {
+          background: rgba(255,255,255,0.07);
+          cursor: not-allowed;
+        }
+
+        .nv-cap {
+          font-size: 10px;
+          color: rgba(255,255,255,0.13);
+          text-align: center;
+          margin-top: 9px;
+          letter-spacing: 0.04em;
+          font-weight: 400;
+        }
+
+        /* Mobile */
+        @media (max-width: 520px) {
+          .nv-page {
+            padding: 0;
+            align-items: stretch;
+          }
+          .nv-card {
+            max-width: 100%;
+            width: 100%;
+            height: 100dvh;
+            min-height: unset;
+            border-radius: 0;
+            border: none;
+            box-shadow: none;
+          }
+          .nv-ft {
+            padding: 10px 14px calc(14px + env(safe-area-inset-bottom, 0px));
+          }
+          .nv-hd {
+            padding: 14px 16px;
+            padding-top: calc(14px + env(safe-area-inset-top, 0px));
+          }
+          .nv-splash {
+            padding: 28px 14px 14px;
+          }
+          .nv-sh1 { font-size: 20px; }
+          .nv-sav { width: 56px; height: 56px; font-size: 22px; }
+          .nv-sp  { font-size: 13px; }
         }
       `}</style>
 
@@ -351,12 +686,12 @@ export default function NaviAgent() {
           {/* Header */}
           <div className="nv-hd">
             <div className="nv-av">N</div>
-            <div>
+            <div className="nv-hd-info">
               <div className="nv-nm">NAVI</div>
               <div className="nv-sb">AlborNES · Knowledge Agent</div>
             </div>
             <div className="nv-online">
-              <div className="nv-dot"/>
+              <div className="nv-dot" />
               <span className="nv-otxt">Online</span>
             </div>
           </div>
@@ -370,7 +705,7 @@ export default function NaviAgent() {
                 <p className="nv-sp">
                   Agente de conocimiento de{" "}
                   <strong>AlborNES · BESS-CO2 Token</strong>.
-                  Pregúntame sobre tecnología, inversión, mercado, legal o estrategia.
+                  Pregúntame sobre tecnología, inversión, mercado o estrategia.
                 </p>
                 <div className="nv-chips">
                   {CHIPS.map(c => (
@@ -381,21 +716,29 @@ export default function NaviAgent() {
                 </div>
               </div>
             ) : (
-              msgs.map((m,i) => <div key={i} className="nv-msg"><Msg m={m}/></div>)
+              msgs.map((m, i) => (
+                <div key={i} className="nv-msg">
+                  <Msg m={m} />
+                </div>
+              ))
             )}
-            <div ref={endRef} style={{height:12}}/>
+            <div ref={endRef} style={{ height: 8 }} />
           </div>
 
-          {/* Chip strip post-start */}
+          {/* Chip strip (post-start) */}
           {live && (
-            <div className="nv-strip">
-              {CHIPS.map(c => (
-                <button key={c.label} className="nv-chip" onClick={() => send(c.label)}>
-                  {c.icon} {c.label}
-                </button>
-              ))}
-            </div>
+            <>
+              <div className="nv-strip">
+                {CHIPS.map(c => (
+                  <button key={c.label} className="nv-chip" onClick={() => send(c.label)}>
+                    {c.icon} {c.label}
+                  </button>
+                ))}
+              </div>
+            </>
           )}
+
+          <div className="nv-divider" />
 
           {/* Input */}
           <div className="nv-ft">
@@ -406,7 +749,7 @@ export default function NaviAgent() {
                 placeholder="Pregunta sobre el proyecto..."
                 value={text}
                 onChange={e => setText(e.target.value)}
-                onKeyDown={e => e.key==="Enter" && !e.shiftKey && send()}
+                onKeyDown={e => e.key === "Enter" && !e.shiftKey && send()}
                 disabled={busy}
               />
               <button
@@ -415,12 +758,15 @@ export default function NaviAgent() {
                 disabled={busy || !text.trim()}
                 aria-label="Enviar"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5">
-                  <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 20V4M12 4L6 10M12 4L18 10"
+                    stroke="white" strokeWidth="2.5"
+                    strokeLinecap="round" strokeLinejoin="round"
+                  />
                 </svg>
               </button>
             </div>
-            <div className="nv-cap">BESS-CO2 Token · AIS Group · CyC Energy Capital · AlborNES v1.0</div>
+            <div className="nv-cap">BESS-CO2 Token · AIS Group · AlborNES v1.0</div>
           </div>
 
         </div>
